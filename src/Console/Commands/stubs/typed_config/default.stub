@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace {{ namespace }};
 
-final readonly class {{ class }} extends {{ parent }}
+final class {{ class }} extends {{ parent }}
 {
     public function __construct(
 {{ properties }}

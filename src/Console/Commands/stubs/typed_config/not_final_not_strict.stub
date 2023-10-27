@@ -2,7 +2,7 @@
 
 namespace {{ namespace }};
 
-readonly class {{ class }} extends {{ parent }}
+class {{ class }} extends {{ parent }}
 {
     public function __construct(
 {{ properties }}
