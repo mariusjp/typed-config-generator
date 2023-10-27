@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+readonly class {{ class }} extends {{ parent }}
+{
+    public function __construct(
+{{ properties }}
+    ) {
+    }
+}

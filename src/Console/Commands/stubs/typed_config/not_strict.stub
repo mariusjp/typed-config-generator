@@ -1,0 +1,11 @@
+<?php
+
+namespace {{ namespace }};
+
+final readonly class {{ class }} extends {{ parent }}
+{
+    public function __construct(
+{{ properties }}
+    ) {
+    }
+}

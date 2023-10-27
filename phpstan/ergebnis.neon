@@ -1,0 +1,9 @@
+includes:
+    - ../vendor/ergebnis/phpstan-rules/rules.neon
+
+parameters:
+    ergebnis:
+        noExtends:
+            classesAllowedToBeExtended:
+                - Exception
+                - LogicException

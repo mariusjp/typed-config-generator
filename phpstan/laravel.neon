@@ -1,0 +1,12 @@
+includes:
+    - ../vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+    strictRules:
+        # strictCalls clashes with larastan and will still throw errors on things larastan fixes
+        strictCalls: false
+
+    ergebnis:
+        noExtends:
+            classesAllowedToBeExtended:
+                - Tests\TestCase

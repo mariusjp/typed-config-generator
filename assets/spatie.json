@@ -1,0 +1,6 @@
+[
+    {
+        "package": "spatie/laravel-data",
+        "config_file": "data"
+    }
+]

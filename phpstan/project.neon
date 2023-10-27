@@ -1,0 +1,8 @@
+parameters:
+    ignoreErrors:
+        # Add errors to ignore here.
+
+    ergebnis:
+        noExtends:
+            classesAllowedToBeExtended:
+                # Add classes here that are allowed to be extended.

@@ -1,0 +1,11 @@
+composer.lock
+
+/vendor/
+/node_modules/
+
+.env
+
+/var/cache/
+.phpunit.result.cache
+/coverage/
+/reports/

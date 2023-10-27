@@ -1,0 +1,6 @@
+[
+    {
+        "package": "laravel/framework",
+        "config_file": "auth"
+    }
+]
