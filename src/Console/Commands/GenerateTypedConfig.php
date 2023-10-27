@@ -218,7 +218,7 @@ EOF;
                 $namespace,
                 $this->buildProperties($properties),
                 \ucfirst(Str::camel($config)),
-                \Coderg33k\TypedConfigGenerator\TypedConfig::class,
+                '\\' . \Coderg33k\TypedConfigGenerator\TypedConfig::class,
             ],
             subject: $stub,
         );
