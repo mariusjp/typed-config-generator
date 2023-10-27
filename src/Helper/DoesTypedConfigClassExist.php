@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Coderg33k\TypedConfigGenerator\Helper;
 
-use CoderG33k\TypedConfigGenerator\Actions\GetClassForConfig;
-use CoderG33k\TypedConfig;
+use Coderg33k\TypedConfigGenerator\Actions\GetClassForConfig;
+use Coderg33k\TypedConfigGenerator\TypedConfig;
 
 final class DoesTypedConfigClassExist
 {

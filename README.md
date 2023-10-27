@@ -32,7 +32,7 @@ in the `config/app.php` file of your project:
 
 'providers' => [
     // ...
-    CoderG33k\TypedConfigServiceProvider::class,
+    Coderg33k\TypedConfigServiceProvider::class,
     // ...
 ];
 ```
