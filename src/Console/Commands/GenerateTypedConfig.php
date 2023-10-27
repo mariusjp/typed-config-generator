@@ -212,11 +212,13 @@ EOF;
                 '{{ namespace }}',
                 '{{ properties }}',
                 '{{ class }}',
+                '{{ parent }}',
             ],
             replace: [
                 $namespace,
                 $this->buildProperties($properties),
                 \ucfirst(Str::camel($config)),
+                \Coderg33k\TypedConfigGenerator\TypedConfig::class,
             ],
             subject: $stub,
         );
