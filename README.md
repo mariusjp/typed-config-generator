@@ -39,28 +39,28 @@ in the `config/app.php` file of your project:
 
 Testing
 -------
-This bundle uses [PHPUnit](https://phpunit.de) for unit and integration tests.
+This package uses [PHPUnit](https://phpunit.de) for unit and integration tests.
 
 It can be run standalone by `composer phpunit` or within the complete checkup by `composer checkup`
 
 ### Checkup
-The above-mentioned checkup runs multiple analyses of the bundle's code. This includes [Squizlab's Codesniffer](https://github.com/squizlabs/PHP_CodeSniffer), [PHPStan](https://phpstan.org) and a [coverage check](https://github.com/richardregeer/phpunit-coverage-check).
+The above-mentioned checkup runs multiple analyses of the package's code. This includes [Squizlab's Codesniffer](https://github.com/squizlabs/PHP_CodeSniffer), [PHPStan](https://phpstan.org) and a [coverage check](https://github.com/richardregeer/phpunit-coverage-check).
 
 Continuous Integration
 ----------------------
-[GitHub actions](https://github.com/features/actions) are used for continuous integration. Check out the [configuration file](https://github.com/coddin-web/idp-openid-connect-bundle/blob/main/.github/workflows/ci.yml) if you'd like to know more.
+[GitHub actions](https://github.com/features/actions) are used for continuous integration. Check out the [configuration file](https://github.com/mjtheone/typed-config-generator/blob/main/.github/workflows/ci.yml) if you'd like to know more.
 
 Changelog
 ---------
-See the [project changelog](https://github.com/coddin-web/idp-openid-connect-bundle/blob/main/CHANGELOG.md)
+See the [project changelog](https://github.com/mjtheone/typed-config-generator/blob/main/CHANGELOG.md)
 
 Contributing
 ------------
-Contributions are always welcome. Please see [CONTRIBUTING.md](https://github.com/coddin-web/idp-openid-connect-bundle/blob/main/CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](https://github.com/coddin-web/idp-openid-connect-bundle/blob/main/CODE_OF_CONDUCT.md) for details.
+Contributions are always welcome. Please see [CONTRIBUTING.md](https://github.com/mjtheone/typed-config-generator/blob/main/CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](https://github.com/mjtheone/typed-config-generator/blob/main/CODE_OF_CONDUCT.md) for details.
 
 License
 -------
-The MIT License (MIT). Please see [License File](https://github.com/coddin-web/idp-openid-connect-bundle/blob/main/LICENSE) for more information.
+The MIT License (MIT). Please see [License File](https://github.com/mjtheone/typed-config-generator/blob/main/LICENSE) for more information.
 
 Credits
 -------
