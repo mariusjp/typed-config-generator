@@ -7,10 +7,10 @@ namespace Coderg33k\TypedConfigGenerator\Console\Commands;
 use Coderg33k\TypedConfigGenerator\Actions\GetConfigsForPredeterminedPackage;
 use Coderg33k\TypedConfigGenerator\Enums\Package;
 use Coderg33k\TypedConfigGenerator\Helper\ArrayFlatMap;
+use Coderg33k\TypedConfigGenerator\Services\Stub\Builder;
+use Coderg33k\TypedConfigGenerator\Services\Stub\Config;
 use Illuminate\Console\Command;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 use function Laravel\Prompts\search;
@@ -21,13 +21,18 @@ final class GenerateTypedConfig extends Command
 {
     private const GENERATED_CONFIG_NAMESPACE_BASE = 'Config';
 
+    /** @var array<int, string> */
     private array $configs = [];
-
     private ?string $package = null;
 
     /** @var string */
     protected $signature = 'coderg33k:generate-typed-config
                     {--all : Generate guestimated classes for all configurations}
+                    {--flat : Don\'t try to generate classes for nested configurations}
+                    {--no-strict : Don\'t add declare(strict_types=1) to the generated classes}
+                    {--no-final : Don\'t make the generated classes final}
+                    {--no-readonly : Don\'t make the generated classes readonly}
+                    {--package= : Generate classes for all configs in a package}
                     {--config=* : One or more configurations to generate classes for}';
 
     /** @var string */
@@ -39,8 +44,8 @@ Generate all your configs as typed (guestimated) classes.
 EOF;
 
     public function __construct(
-        private readonly Filesystem $files,
         private readonly GetConfigsForPredeterminedPackage $getConfigsForPredeterminedPackage,
+        private readonly Builder $stubBuilder,
         private readonly ArrayFlatMap $arrayFlatMap,
     ) {
         parent::__construct();
@@ -61,7 +66,7 @@ EOF;
 
         $this->configs = (array) $this->option('config');
 
-        if (\count($this->configs) === 0) {
+        if (\count($this->configs) === 0 && !\is_string($this->option('package'))) {
             $this->promptForConfigs();
         }
     }
@@ -137,37 +142,22 @@ EOF;
         $rootNamespace = $this->laravel->getNamespace();
         $namespace = $rootNamespace . self::GENERATED_CONFIG_NAMESPACE_BASE;
 
+        $stubConfiguration = Config::make(
+            $this->option('flat'),
+            !$this->option('no-strict'),
+            !$this->option('no-final'),
+            !$this->option('no-readonly'),
+        );
+
         // @todo: Get known namespaces for package configs.
 
         $nullValues = [];
-        $properties = [];
         foreach ($configsToProcess as $config) {
-            $configData = config($config);
-
-            foreach ($configData as $key => $value) {
-                // Let's start guestimating...
-                if (\is_array($value)) {
-                    $properties[$key] = 'array';
-                } else if (\is_bool($value)) {
-                    $properties[$key] = 'bool';
-                } else if (\is_float($value)) {
-                    $properties[$key] = 'float';
-                } else if (\is_int($value)) {
-                    $properties[$key] = 'int';
-                } else if (\is_null($value)) {
-                    $properties[$key] = 'mixed';
-                    $nullValues[$config][] = $key;
-                } else if (\is_string($value)) {
-                    $properties[$key] = 'string';
-                } else {
-                    $properties[$key] = 'mixed';
-                }
-            }
-
-            $this->buildStub(
+            $this->stubBuilder->handle(
                 config: $config,
                 namespace: $namespace,
-                properties: $properties,
+                nullValues: $nullValues,
+                stubConfiguration: $stubConfiguration,
             );
         }
 
@@ -196,82 +186,7 @@ EOF;
                     ),
                     $allConfigs,
                 ),
-            )
+            ),
         ];
-    }
-
-    private function buildStub(
-        string $config,
-        string $namespace,
-        array $properties,
-    ): void {
-        $stub = \file_get_contents($this->getStub());
-
-        $stub = \str_replace(
-            search: [
-                '{{ namespace }}',
-                '{{ properties }}',
-                '{{ class }}',
-                '{{ parent }}',
-            ],
-            replace: [
-                $namespace,
-                $this->buildProperties($properties),
-                \ucfirst(Str::camel($config)),
-                '\\' . \Coderg33k\TypedConfigGenerator\TypedConfig::class,
-            ],
-            subject: $stub,
-        );
-
-        $this->writeClass(
-            $stub,
-            $config,
-            $namespace,
-        );
-    }
-
-    private function getStub(): string
-    {
-        $relativePath = '/stubs/typed_config/default.stub';
-
-        return \file_exists($customPath = $this->laravel->basePath(\trim($relativePath, '/')))
-            ? $customPath
-            : __DIR__ . $relativePath;
-    }
-
-    private function buildProperties(array $properties): string
-    {
-        $properties = \array_map(
-            fn (string $type, string $name): string =>
-                \sprintf('        public %s $%s,', $type, Str::camel($name)),
-            $properties,
-            \array_keys($properties),
-        );
-
-        return \implode(PHP_EOL, $properties);
-    }
-
-    private function writeClass(
-        string $stub,
-        string $config,
-        string $namespace,
-    ): void {
-        $classDirectoryPath = \str_replace($this->laravel->getNamespace(), '', $namespace);
-
-        $this->files->makeDirectory(
-            path: app_path($classDirectoryPath),
-            recursive: true,
-            force: true,
-        );
-
-        $classPath = app_path(
-            \sprintf(
-                '%s/%s.php',
-                $classDirectoryPath,
-                \ucfirst(Str::camel($config)),
-            )
-        );
-
-        $this->files->put($classPath, $stub);
     }
 }

@@ -48,7 +48,7 @@ The above-mentioned checkup runs multiple analyses of the package's code. This i
 
 Continuous Integration
 ----------------------
-[GitHub actions](https://github.com/features/actions) are used for continuous integration. Check out the [configuration file](https://github.com/mjtheone/typed-config-generator/blob/main/.github/workflows/ci.yml) if you'd like to know more.
+[GitHub actions](https://github.com/features/actions) are used for continuous integration. Check out the [configuration file](https://github.com/mjtheone/typed-config-generator/blob/main/.github/workflows/run-tests.yml) if you'd like to know more.
 
 Changelog
 ---------

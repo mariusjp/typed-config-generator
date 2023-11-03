@@ -35,10 +35,10 @@ final class TypedConfigServiceProvider extends ServiceProvider
                 config: $config,
             );
 
-            $this->app->singleton(
-                $class,
-                fn () => $class::fromConfig(...config($config)),
-            );
+//            $this->app->singleton(
+//                $class,
+//                fn () => $class::fromConfig(...config($config)),
+//            );
         }
     }
 }
