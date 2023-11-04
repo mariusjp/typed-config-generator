@@ -9,7 +9,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [ ubuntu-latest ]
-        php: [ 8.3, 8.2, 8.1 ]
+        php: [ 8.3, 8.2 ]
         laravel: [ 9.*, 10.* ]
         stability: [ prefer-stable ]
         include:
@@ -38,5 +38,5 @@ jobs:
           env:
             COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
 
-      -   name: Execute tests
-          run: vendor/bin/phpunit
+      -   name: Execute checkup
+          run: composer checkup

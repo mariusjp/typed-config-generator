@@ -45,7 +45,7 @@ final class GetNamespaceOfClassFile
 
             for (; $i < \count($tokens); $i++) {
                 if ($tokens[$i][0] === T_NAMESPACE) {
-                    for ($j = $i + 1; $j < \count($tokens); $j++) {
+                    for ($j = ($i + 1); $j < \count($tokens); $j++) {
                         if ($tokens[$j][0] === T_NAME_QUALIFIED) {
                             $fqn = $tokens[$j][1];
                             break;

@@ -20,7 +20,12 @@ final class TypedConfigServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        // Only register the top-level config classes.
         foreach (\array_keys(config()->all()) as $config) {
+            if (!\is_string($config)) {
+                continue;
+            }
+
             $doesConfigClassExist = DoesTypedConfigClassExist::determine(
                 namespace: $this->app->getNamespace(),
                 config: $config,
@@ -35,10 +40,10 @@ final class TypedConfigServiceProvider extends ServiceProvider
                 config: $config,
             );
 
-//            $this->app->singleton(
-//                $class,
-//                fn () => $class::fromConfig(...config($config)),
-//            );
+            $this->app->singleton(
+                $class,
+                fn () => $class::fromConfig(...config($config)),
+            );
         }
     }
 }

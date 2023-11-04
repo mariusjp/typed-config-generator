@@ -4,21 +4,14 @@ declare(strict_types=1);
 
 namespace Coderg33k\TypedConfigGenerator;
 
-use Illuminate\Support\Str;
+use Coderg33k\TypedConfigGenerator\Resolver\TypedClassFromConfigDataResolver;
 
-abstract class TypedConfig
+abstract readonly class TypedConfig
 {
-    public static function fromConfig(...$properties): static
-    {
-        // @todo Do this with a pipeline/mapper?
-        $properties = \array_combine(
-            \array_map(
-                fn (string $key): string => Str::camel($key),
-                \array_keys($properties),
-            ),
-            $properties,
+    public static function fromConfig(...$properties): static {
+        return app(TypedClassFromConfigDataResolver::class)->execute(
+            static::class,
+            ...$properties,
         );
-
-        return new static(...$properties);
     }
 }

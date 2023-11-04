@@ -37,6 +37,22 @@ in the `config/app.php` file of your project:
 ];
 ```
 
+### Step 3: using the module
+By running the command `php artisan coderg33k:generate` the package will generate a typed config class for each config file in your `config` directory.
+The command has a set of options to tweak the output.
+
+Run `php artisan coderg33k:generate --help` to see the options.
+
+| Option          | Description                                                                            |
+|-----------------|----------------------------------------------------------------------------------------|
+| `--all`         | Don't get a prompt and generate a class for all configs                                |
+| `--no-strict`   | Don't add strict typing to the generated classes                                       |
+| `--no-final`    | Don't make the generated classes final                                                 |
+| `--no-readonly` | Don't make the generated properties readonly                                           |
+| `--package=`    | A string that represents a package, like laravel or spatie to generate the classes for |
+| `--config=*`    | A comma separated list of configs to generate classes for                              |
+
+
 Testing
 -------
 This package uses [PHPUnit](https://phpunit.de) for unit and integration tests.

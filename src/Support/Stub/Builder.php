@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Coderg33k\TypedConfigGenerator\Services\Stub;
+namespace Coderg33k\TypedConfigGenerator\Support\Stub;
 
 use Coderg33k\TypedConfigGenerator\Helper\IsArrayConfiguration;
 use Coderg33k\TypedConfigGenerator\TypedConfig;
@@ -44,6 +44,7 @@ final class Builder
         $properties = [];
         $configData = config($config);
 
+        // @todo: Check if $key is a reserved keyword and do something about it when it is.
         foreach ($configData as $key => $value) {
             if (\is_array($value)) {
                 if ($stubConfiguration->useFlat) {
@@ -72,7 +73,9 @@ final class Builder
                 $properties[$key] = 'float';
             } else if (\is_int($value) || \is_numeric($value)) {
                 $properties[$key] = 'int';
+            // phpcs:disable Generic.PHP.ForbiddenFunctions.Found
             } else if (\is_null($value)) {
+            // phpcs:enable
                 $properties[$key] = 'mixed';
                 $nullValues[$config][] = $key;
             } else if (\is_string($value)) {
@@ -107,7 +110,7 @@ final class Builder
                     '%spublic %s $%s,',
                     \str_repeat(' ', 8),
                     $type,
-                    Str::camel($name)
+                    Str::camel($name),
                 ),
             $properties,
             \array_keys($properties),

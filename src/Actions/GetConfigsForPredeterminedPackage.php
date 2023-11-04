@@ -10,7 +10,7 @@ final class GetConfigsForPredeterminedPackage
 {
     public function execute(Package $package): array
     {
-        return match($package) {
+        return match ($package) {
             Package::Laravel => [
                 'app',
                 'auth',

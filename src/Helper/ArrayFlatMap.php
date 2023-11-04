@@ -16,7 +16,10 @@ final class ArrayFlatMap
             if (\is_array($value)) {
                 $result = \array_merge($result, $this->execute($value, $key));
             } else {
-                $result[] = [$prefix, $value];
+                $result[] = [
+                $prefix,
+                $value,
+                ];
             }
         }
 

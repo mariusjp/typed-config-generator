@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Coderg33k\TypedConfigGenerator\Services\Stub;
+namespace Coderg33k\TypedConfigGenerator\Support\Stub;
 
 final readonly class Config
 {

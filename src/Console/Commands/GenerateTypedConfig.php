@@ -7,8 +7,8 @@ namespace Coderg33k\TypedConfigGenerator\Console\Commands;
 use Coderg33k\TypedConfigGenerator\Actions\GetConfigsForPredeterminedPackage;
 use Coderg33k\TypedConfigGenerator\Enums\Package;
 use Coderg33k\TypedConfigGenerator\Helper\ArrayFlatMap;
-use Coderg33k\TypedConfigGenerator\Services\Stub\Builder;
-use Coderg33k\TypedConfigGenerator\Services\Stub\Config;
+use Coderg33k\TypedConfigGenerator\Support\Stub\Builder;
+use Coderg33k\TypedConfigGenerator\Support\Stub\Config;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -36,8 +36,7 @@ final class GenerateTypedConfig extends Command
                     {--config=* : One or more configurations to generate classes for}';
 
     /** @var string */
-    protected $description =
-<<<EOF
+    protected $description = <<<EOF
 Generate all your configs as typed (guestimated) classes.
   Without input the command will generate all configs.
   It can also auto discover config files from packages.
@@ -109,7 +108,10 @@ EOF;
 
     private function parseChoice(string $choice): void
     {
-        [$type, $value] = \explode(': ', \strip_tags($choice));
+        [
+        $type,
+        $value,
+        ] = \explode(': ', \strip_tags($choice));
 
         switch ($type) {
             case 'Config':
@@ -150,7 +152,6 @@ EOF;
         );
 
         // @todo: Get known namespaces for package configs.
-
         $nullValues = [];
         foreach ($configsToProcess as $config) {
             $this->stubBuilder->handle(
@@ -164,7 +165,10 @@ EOF;
         if (\count($nullValues) > 0) {
             $this->components->warn('Some properties have null values, please check the generated class(es).');
             $this->table(
-                ['Config', 'Key'],
+                [
+                'Config',
+                'Key',
+                ],
                 $this->arrayFlatMap->execute($nullValues),
             );
         }

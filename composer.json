@@ -8,6 +8,7 @@
     },
     "require-dev": {
         "dg/bypass-finals": "^1.5",
+        "ergebnis/phpstan-rules": "^2.1",
         "nunomaduro/larastan": "^2.6",
         "orchestra/testbench": "^7.0|^8.0",
         "phpstan/phpstan": "^1.10",
@@ -38,5 +39,25 @@
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Coderg33k\\TypedConfigGenerator\\TypedConfigServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "phpcs": "phpcs --standard=./phpcs_codestyle.xml -n src tests",
+        "phpcs-fix": "phpcbf --standard=./phpcs_codestyle.xml -n src tests",
+        "phpstan": "phpstan analyse --memory-limit=6G",
+        "phpunit": "vendor/bin/phpunit -c phpunit.xml.dist",
+        "phpunitwcov": "XDEBUG_MODE=coverage vendor/bin/phpunit -c phpunit.xml.dist --coverage-html reports/ --coverage-clover coverage/clover.xml",
+        "phpcoverage": "coverage-check coverage/clover.xml 100",
+        "checkup": [
+            "@phpcs",
+            "@phpstan",
+            "@phpunitwcov"
+        ]
     }
 }
