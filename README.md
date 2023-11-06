@@ -1,9 +1,5 @@
-A Laravel typed config generator
+A typed config class generator for Laravel
 ========================================
-[![Latest Version](http://img.shields.io/packagist/v/MJTheOne/typed-config-generator.svg?style=flat-square)](https://github.com/MJTheOne/typed-config-generator/releases)
-![Build](https://github.com/MJTheOne/typed-config-generator/actions/workflows/run-tests.yml/badge.svg?event=push)
-[![codecov](https://codecov.io/gh/MJTheOne/typed-config-generator/branch/main/graph/badge.svg?token=BRH4XEU1VK)](https://codecov.io/gh/MJTheOne/typed-config-generator)
-
 Are you a PHPStan lovin' strict programmer?! Say no more! This package will generate typed config classes for you based on your config files.
 
 We all struggle with the `mixed` return type of the `config()` helper function. This package will stop your struggle and leave all your (unnecessary?) type checks behind you!
@@ -21,23 +17,7 @@ Open a command console, enter your project directory and execute:
 $ composer require coderg33k/typed-config-generator
 ```
 
-### Step 2: Enable the module
-*@todo: Autodiscover the ServiceProvider*
-
-Then, enable the library by adding the service provider to the list of registered providers
-in the `config/app.php` file of your project:
-
-```php
-// config/app.php
-
-'providers' => [
-    // ...
-    Coderg33k\TypedConfigServiceProvider::class,
-    // ...
-];
-```
-
-### Step 3: using the module
+### Step 2: using the module
 By running the command `php artisan coderg33k:generate` the package will generate a typed config class for each config file in your `config` directory.
 The command has a set of options to tweak the output.
 
@@ -52,19 +32,11 @@ Run `php artisan coderg33k:generate --help` to see the options.
 | `--package=`    | A string that represents a package, like laravel or spatie to generate the classes for |
 | `--config=*`    | A comma separated list of configs to generate classes for                              |
 
-
 Testing
 -------
 This package uses [PHPUnit](https://phpunit.de) for unit and integration tests.
 
 It can be run standalone by `composer phpunit` or within the complete checkup by `composer checkup`
-
-### Checkup
-The above-mentioned checkup runs multiple analyses of the package's code. This includes [Squizlab's Codesniffer](https://github.com/squizlabs/PHP_CodeSniffer), [PHPStan](https://phpstan.org) and a [coverage check](https://github.com/richardregeer/phpunit-coverage-check).
-
-Continuous Integration
-----------------------
-[GitHub actions](https://github.com/features/actions) are used for continuous integration. Check out the [configuration file](https://github.com/mjtheone/typed-config-generator/blob/main/.github/workflows/run-tests.yml) if you'd like to know more.
 
 Changelog
 ---------
@@ -78,6 +50,3 @@ License
 -------
 The MIT License (MIT). Please see [License File](https://github.com/mjtheone/typed-config-generator/blob/main/LICENSE) for more information.
 
-Credits
--------
-This code is principally developed and maintained by [Marius Posthumus](https://github.com/MJTheOne)
