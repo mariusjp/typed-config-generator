@@ -12,6 +12,95 @@ use Illuminate\Support\Str;
 
 final class Builder
 {
+    /**
+     * Copied from Illuminate\Console\GeneratorCommand.
+     * @var array<int, string>
+     */
+    protected array $reservedNames = [
+        '__halt_compiler',
+        'abstract',
+        'and',
+        'array',
+        'as',
+        'break',
+        'callable',
+        'case',
+        'catch',
+        'class',
+        'clone',
+        'const',
+        'continue',
+        'declare',
+        'default',
+        'die',
+        'do',
+        'echo',
+        'else',
+        'elseif',
+        'empty',
+        'enddeclare',
+        'endfor',
+        'endforeach',
+        'endif',
+        'endswitch',
+        'endwhile',
+        'enum',
+        'eval',
+        'exit',
+        'extends',
+        'false',
+        'final',
+        'finally',
+        'fn',
+        'for',
+        'foreach',
+        'function',
+        'global',
+        'goto',
+        'if',
+        'implements',
+        'include',
+        'include_once',
+        'instanceof',
+        'insteadof',
+        'interface',
+        'isset',
+        'list',
+        'match',
+        'namespace',
+        'new',
+        'or',
+        'print',
+        'private',
+        'protected',
+        'public',
+        'readonly',
+        'require',
+        'require_once',
+        'return',
+        'self',
+        'static',
+        'switch',
+        'throw',
+        'trait',
+        'true',
+        'try',
+        'unset',
+        'use',
+        'var',
+        'while',
+        'xor',
+        'yield',
+        '__CLASS__',
+        '__DIR__',
+        '__FILE__',
+        '__FUNCTION__',
+        '__LINE__',
+        '__METHOD__',
+        '__NAMESPACE__',
+        '__TRAIT__',
+    ];
+
     public function __construct(
         private readonly Application $laravel,
         private readonly Filesystem $files,
@@ -26,8 +115,8 @@ final class Builder
         string $namespace,
         array &$nullValues,
         Config $stubConfiguration,
-    ): string {
-        return $this->determineProperties(
+    ): void {
+        $this->determineProperties(
             config: $config,
             namespace: $namespace,
             nullValues: $nullValues,
@@ -44,7 +133,6 @@ final class Builder
         $properties = [];
         $configData = config($config);
 
-        // @todo: Check if $key is a reserved keyword and do something about it when it is.
         foreach ($configData as $key => $value) {
             if (\is_array($value)) {
                 if ($stubConfiguration->useFlat) {
@@ -60,7 +148,7 @@ final class Builder
                 if ($this->specialCase($config, $key)) {
                     $properties[$key] = 'array';
                 } else {
-                    $properties[$key] = $this->handle(
+                    $properties[$key] = $this->determineProperties(
                         config: \sprintf('%s.%s', $config, $key),
                         namespace: $namespace,
                         nullValues: $nullValues,
@@ -85,7 +173,7 @@ final class Builder
             }
         }
 
-        return $this->buildStub(
+        return $this->createConfigClass(
             config: $config,
             namespace: $namespace,
             properties: $properties,
@@ -119,7 +207,7 @@ final class Builder
         return \implode(PHP_EOL, $properties);
     }
 
-    private function buildStub(
+    private function createConfigClass(
         string $config,
         string $namespace,
         array $properties,
@@ -128,7 +216,16 @@ final class Builder
         $stub = \file_get_contents($this->getStub());
 
         $configParts = \explode('.', $config);
-        $classPart = \ucfirst(Str::camel(\array_pop($configParts)));
+        // The last part is popped because we don't need it in the namespace.
+        $lastConfigPart = \array_pop($configParts);
+        $classPart = \ucfirst(Str::camel($lastConfigPart));
+
+        if ($this->isReservedWord($lastConfigPart)) {
+            $classPart = $this->contextAwareClassNaming(
+                classPart: $classPart,
+                configParts: $configParts,
+            );
+        }
 
         $classNamespace = \implode(
             '\\',
@@ -200,7 +297,16 @@ final class Builder
         string $namespace,
     ): void {
         $configParts = \explode('.', $config);
-        $classPart = \ucfirst(Str::camel(\array_pop($configParts)));
+        // The last part is popped because we don't need it in the class directory path.
+        $lastConfigPart = \array_pop($configParts);
+        $classPart = \ucfirst(Str::camel($lastConfigPart));
+
+        if ($this->isReservedWord($lastConfigPart)) {
+            $classPart = $this->contextAwareClassNaming(
+                classPart: $classPart,
+                configParts: $configParts,
+            );
+        }
 
         $classDirectoryPath = \str_replace(
             search: $this->laravel->getNamespace(),
@@ -246,10 +352,36 @@ final class Builder
             ],
         ];
 
+        // @todo: Merge with user inputted special case?
+
         if (!\array_key_exists($config, $specialCases)) {
             return false;
         }
 
         return \in_array($key, $specialCases[$config]);
+    }
+
+    private function isReservedWord(string $configPart): bool {
+        if (!\in_array(\strtolower($configPart), $this->reservedNames)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array<int, string> $configParts
+     */
+    private function contextAwareClassNaming(
+        string $classPart,
+        array $configParts,
+    ) {
+        $lastConfigPart = \array_reverse($configParts)[0];
+
+        return \sprintf(
+            '%s%s',
+            \ucfirst(Str::camel($lastConfigPart)),
+            $classPart,
+        );
     }
 }

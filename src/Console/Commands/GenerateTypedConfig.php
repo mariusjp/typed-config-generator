@@ -165,10 +165,7 @@ EOF;
         if (\count($nullValues) > 0) {
             $this->components->warn('Some properties have null values, please check the generated class(es).');
             $this->table(
-                [
-                'Config',
-                'Key',
-                ],
+                ['Config', 'Key'],
                 $this->arrayFlatMap->execute($nullValues),
             );
         }
