@@ -108,10 +108,7 @@ EOF;
 
     private function parseChoice(string $choice): void
     {
-        [
-        $type,
-        $value,
-        ] = \explode(': ', \strip_tags($choice));
+        [$type, $value] = \explode(': ', \strip_tags($choice));
 
         switch ($type) {
             case 'Config':
@@ -152,6 +149,7 @@ EOF;
         );
 
         // @todo: Get known namespaces for package configs.
+
         $nullValues = [];
         foreach ($configsToProcess as $config) {
             $this->stubBuilder->handle(

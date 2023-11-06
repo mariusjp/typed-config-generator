@@ -1,6 +1,7 @@
 [
     {
         "package": "laravel/framework",
+        "namespace": "Illuminate\\Auth",
         "config_file": "auth"
     }
 ]

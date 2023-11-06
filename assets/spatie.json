@@ -1,6 +1,7 @@
 [
     {
         "package": "spatie/laravel-data",
+        "namespace": "Spatie\\Data",
         "config_file": "data"
     }
 ]
