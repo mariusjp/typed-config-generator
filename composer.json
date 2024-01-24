@@ -4,7 +4,8 @@
     "type": "library",
     "require": {
         "php": "^8.2",
-        "illuminate/support": "^9.0|^10.0"
+        "illuminate/support": "^9.0|^10.0",
+        "thecodingmachine/safe": "^2.5"
     },
     "require-dev": {
         "dg/bypass-finals": "^1.5",

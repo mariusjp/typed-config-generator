@@ -16,6 +16,10 @@ final class TypedConfigServiceProvider extends ServiceProvider
         $this->commands([
             GenerateTypedConfig::class,
         ]);
+
+        $this->publishes([
+            __DIR__ . '/../config/typed_config_generator.php' => config_path('typed_config_generator.php'),
+        ]);
     }
 
     public function register(): void
@@ -26,19 +30,13 @@ final class TypedConfigServiceProvider extends ServiceProvider
                 continue;
             }
 
-            $doesConfigClassExist = DoesTypedConfigClassExist::determine(
-                namespace: $this->app->getNamespace(),
-                config: $config,
-            );
+            $doesConfigClassExist = DoesTypedConfigClassExist::determine(config: $config);
 
             if (!$doesConfigClassExist) {
                 continue;
             }
 
-            $class = GetClassForConfig::execute(
-                namespace: $this->app->getNamespace(),
-                config: $config,
-            );
+            $class = GetClassForConfig::execute(config: $config);
 
             $this->app->singleton(
                 $class,

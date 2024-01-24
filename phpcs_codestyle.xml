@@ -148,6 +148,7 @@
         <exclude-pattern>tests/**/*.php</exclude-pattern>
     </rule>
     <rule ref="Squiz.Arrays.ArrayDeclaration.SingleLineNotAllowed">
+        <exclude-pattern>src/*.php</exclude-pattern>
         <exclude-pattern>tests/**/*.php</exclude-pattern>
     </rule>
     <rule ref="Squiz.NamingConventions.ValidVariableName" />

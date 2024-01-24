@@ -8,7 +8,11 @@ use Coderg33k\TypedConfigGenerator\Resolver\TypedClassFromConfigDataResolver;
 
 abstract readonly class TypedConfig
 {
-    public static function fromConfig(...$properties): static {
+    /**
+     * @param string|array<string, mixed>|bool $properties
+     */
+    final public static function fromConfig(mixed ...$properties): static
+    {
         return app(TypedClassFromConfigDataResolver::class)->execute(
             static::class,
             ...$properties,

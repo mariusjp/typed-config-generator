@@ -1,8 +1,13 @@
 parameters:
     ignoreErrors:
-        # Add errors to ignore here.
+        -
+            path: ../src/Console/Commands/GenerateTypedConfig.php
+            message: '#Only booleans are allowed in a negated boolean, array\|bool\|string\|null given.#'
+            count: 3
+        - '#Method Coderg33k\\TypedConfigGenerator\\TypedConfig\:\:fromConfig\(\) should return static\(Coderg33k\\TypedConfigGenerator\\TypedConfig\) but returns Coderg33k\\TypedConfigGenerator\\TypedConfig.#'
 
     ergebnis:
         noExtends:
             classesAllowedToBeExtended:
-                # Add classes here that are allowed to be extended.
+                - Illuminate\Support\ServiceProvider
+                - Illuminate\Console\Command

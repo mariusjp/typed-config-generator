@@ -2,113 +2,91 @@
 
 declare(strict_types=1);
 
-namespace Coderg33k\TypedConfigGenerator\Support\Stub;
+namespace Coderg33k\TypedConfigGenerator\Stub;
 
+use Coderg33k\TypedConfigGenerator\Data\ConfigTree;
+use Coderg33k\TypedConfigGenerator\Enums\PropertyType;
 use Coderg33k\TypedConfigGenerator\Helper\IsArrayConfiguration;
+use Coderg33k\TypedConfigGenerator\Helper\ReservedName;
 use Coderg33k\TypedConfigGenerator\TypedConfig;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Str;
+use Safe\Exceptions\FilesystemException;
 
-final class Builder
+final readonly class Builder
 {
-    /**
-     * Copied from Illuminate\Console\GeneratorCommand.
-     * @var array<int, string>
-     */
-    protected array $reservedNames = [
-        '__halt_compiler',
-        'abstract',
-        'and',
-        'array',
-        'as',
-        'break',
-        'callable',
-        'case',
-        'catch',
-        'class',
-        'clone',
-        'const',
-        'continue',
-        'declare',
-        'default',
-        'die',
-        'do',
-        'echo',
-        'else',
-        'elseif',
-        'empty',
-        'enddeclare',
-        'endfor',
-        'endforeach',
-        'endif',
-        'endswitch',
-        'endwhile',
-        'enum',
-        'eval',
-        'exit',
-        'extends',
-        'false',
-        'final',
-        'finally',
-        'fn',
-        'for',
-        'foreach',
-        'function',
-        'global',
-        'goto',
-        'if',
-        'implements',
-        'include',
-        'include_once',
-        'instanceof',
-        'insteadof',
-        'interface',
-        'isset',
-        'list',
-        'match',
-        'namespace',
-        'new',
-        'or',
-        'print',
-        'private',
-        'protected',
-        'public',
-        'readonly',
-        'require',
-        'require_once',
-        'return',
-        'self',
-        'static',
-        'switch',
-        'throw',
-        'trait',
-        'true',
-        'try',
-        'unset',
-        'use',
-        'var',
-        'while',
-        'xor',
-        'yield',
-        '__CLASS__',
-        '__DIR__',
-        '__FILE__',
-        '__FUNCTION__',
-        '__LINE__',
-        '__METHOD__',
-        '__NAMESPACE__',
-        '__TRAIT__',
-    ];
-
     public function __construct(
-        private readonly Application $laravel,
-        private readonly Filesystem $files,
+        private Filesystem $files,
     ) {
+    }
+
+    public function buildTree(
+        string $config,
+        ConfigTree &$tree,
+    ): void {
+        /** @var array<string, mixed> $configData */
+        $configData = config($config);
+
+        foreach ($configData as $key => $value) {
+            $isNull = false;
+
+            if (\is_array($value)) {
+                if (IsArrayConfiguration::execute($value)) {
+                    $tree->createAndPushBranch(
+                        config: $key,
+                        value: $value,
+                        type: PropertyType::Array,
+                    );
+
+                    continue;
+                }
+
+                if ($this->skipDeepDive($config, $key)) {
+                    $tree->createAndPushBranch(
+                        config: $key,
+                        value: $value,
+                        type: PropertyType::Array,
+                    );
+                } else {
+                    $deepConfig = \sprintf('%s.%s', $config, $key);
+                    $deepTree = ConfigTree::create($key, config($deepConfig));
+                    $this->buildTree(
+                        config: $deepConfig,
+                        tree: $deepTree,
+                    );
+                    $tree->addBranch($deepTree);
+                }
+
+                continue;
+            } else if (\is_bool($value)) {
+                $type = PropertyType::Boolean;
+            } else if (\is_float($value)) {
+                $type = PropertyType::Float;
+            } else if (\is_int($value)) {
+                $type = PropertyType::Integer;
+                // phpcs:disable Generic.PHP.ForbiddenFunctions.Found
+            } else if (\is_null($value)) {
+                // phpcs:enable
+                $type = PropertyType::Unknown;
+                $isNull = true;
+            } else if (\is_string($value)) {
+                $type = PropertyType::String;
+            } else {
+                $type = PropertyType::Unknown;
+            }
+
+            $tree->createAndPushBranch(
+                config: $key,
+                value: $value,
+                type: $type,
+                isNull: $isNull,
+            );
+        }
     }
 
     /**
      * @param array<string, array<int, string>> $nullValues
+     * @throws FilesystemException
      */
     public function handle(
         string $config,
@@ -124,6 +102,10 @@ final class Builder
         );
     }
 
+    /**
+     * @param array<string, array<int, string>> $nullValues
+     * @throws FilesystemException
+     */
     private function determineProperties(
         string $config,
         string $namespace,
@@ -131,6 +113,7 @@ final class Builder
         Config $stubConfiguration,
     ): string {
         $properties = [];
+        /** @var array<string, mixed> $configData */
         $configData = config($config);
 
         foreach ($configData as $key => $value) {
@@ -145,7 +128,7 @@ final class Builder
                     continue;
                 }
 
-                if ($this->specialCase($config, $key)) {
+                if ($this->skipDeepDive($config, $key)) {
                     $properties[$key] = 'array';
                 } else {
                     $properties[$key] = $this->determineProperties(
@@ -190,6 +173,9 @@ final class Builder
             : __DIR__ . $relativePath;
     }
 
+    /**
+     * @param array<string, string> $properties
+     */
     private function buildProperties(array $properties): string
     {
         $properties = \array_map(
@@ -207,20 +193,24 @@ final class Builder
         return \implode(PHP_EOL, $properties);
     }
 
+    /**
+     * @param array<string, string> $properties
+     * @throws FilesystemException
+     */
     private function createConfigClass(
         string $config,
         string $namespace,
         array $properties,
         Config $stubConfiguration,
     ): string {
-        $stub = \file_get_contents($this->getStub());
+        $stub = \Safe\file_get_contents($this->getStub());
 
         $configParts = \explode('.', $config);
         // The last part is popped because we don't need it in the namespace.
         $lastConfigPart = \array_pop($configParts);
         $classPart = \ucfirst(Str::camel($lastConfigPart));
 
-        if ($this->isReservedWord($lastConfigPart)) {
+        if (ReservedName::check($lastConfigPart)) {
             $classPart = $this->contextAwareClassNaming(
                 classPart: $classPart,
                 configParts: $configParts,
@@ -233,29 +223,6 @@ final class Builder
                 fn (string $configPart): string => \ucfirst(Str::camel($configPart)),
                 $configParts,
             ),
-        );
-
-        $stub = \str_replace(
-            search: [
-                '{{ namespace }}',
-                '{{ properties }}',
-                '{{ class }}',
-                '{{ parent }}',
-            ],
-            replace: [
-                \rtrim(
-                    \sprintf(
-                        '%s\\%s',
-                        $namespace,
-                        $classNamespace,
-                    ),
-                    '\\',
-                ),
-                $this->buildProperties($properties),
-                $classPart,
-                '\\' . TypedConfig::class,
-            ],
-            subject: $stub,
         );
 
         if (!$stubConfiguration->useFinal) {
@@ -282,6 +249,29 @@ final class Builder
             );
         }
 
+        $stub = \str_replace(
+            search: [
+                '{{ namespace }}',
+                '{{ properties }}',
+                '{{ class }}',
+                '{{ parent }}',
+            ],
+            replace: [
+                \rtrim(
+                    \sprintf(
+                        '%s\\%s',
+                        $namespace,
+                        $classNamespace,
+                    ),
+                    '\\',
+                ),
+                $this->buildProperties($properties),
+                $classPart,
+                '\\' . TypedConfig::class,
+            ],
+            subject: $stub,
+        );
+
         $this->writeClass(
             $stub,
             $config,
@@ -301,7 +291,7 @@ final class Builder
         $lastConfigPart = \array_pop($configParts);
         $classPart = \ucfirst(Str::camel($lastConfigPart));
 
-        if ($this->isReservedWord($lastConfigPart)) {
+        if (ReservedName::check($lastConfigPart)) {
             $classPart = $this->contextAwareClassNaming(
                 classPart: $classPart,
                 configParts: $configParts,
@@ -309,7 +299,7 @@ final class Builder
         }
 
         $classDirectoryPath = \str_replace(
-            search: $this->laravel->getNamespace(),
+            search: app()->getNamespace(),
             replace: '',
             subject: $namespace,
         );
@@ -338,35 +328,19 @@ final class Builder
         $this->files->put($classPath, $stub);
     }
 
-    private function specialCase(
+    private function skipDeepDive(
         string $config,
         string $key,
     ): bool {
-        $specialCases = [
-            'app' => [
-                'providers',
-                'aliases',
-            ],
-            'cache' => [
-                'servers',
-            ],
-        ];
+        // Oh the irony...
+        /* @phpstan-ignore-next-line */
+        $skipDeepDives = config('typed_config_generator.skip_deep_dive');
 
-        // @todo: Merge with user inputted special case?
-
-        if (!\array_key_exists($config, $specialCases)) {
+        if (!\array_key_exists($config, $skipDeepDives)) {
             return false;
         }
 
-        return \in_array($key, $specialCases[$config]);
-    }
-
-    private function isReservedWord(string $configPart): bool {
-        if (!\in_array(\strtolower($configPart), $this->reservedNames)) {
-            return false;
-        }
-
-        return true;
+        return \in_array($key, $skipDeepDives[$config]);
     }
 
     /**
@@ -375,7 +349,7 @@ final class Builder
     private function contextAwareClassNaming(
         string $classPart,
         array $configParts,
-    ) {
+    ): string {
         $lastConfigPart = \array_reverse($configParts)[0];
 
         return \sprintf(

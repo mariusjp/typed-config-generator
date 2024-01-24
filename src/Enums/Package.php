@@ -14,6 +14,7 @@ enum Package: string
         return match (\trim(\strtolower($value))) {
             'laravel' => self::Laravel,
             'spatie' => self::Spatie,
+            default => throw new \InvalidArgumentException('Invalid package value'),
         };
     }
 }

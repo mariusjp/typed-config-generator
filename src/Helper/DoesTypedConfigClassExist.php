@@ -9,14 +9,9 @@ use Coderg33k\TypedConfigGenerator\TypedConfig;
 
 final class DoesTypedConfigClassExist
 {
-    public static function determine(
-        string $namespace,
-        string $config,
-    ): bool {
-        $class = GetClassForConfig::execute(
-            namespace: $namespace,
-            config: $config,
-        );
+    public static function determine(string $config): bool
+    {
+        $class = GetClassForConfig::execute(config: $config);
 
         if (!\class_exists($class)) {
             return false;

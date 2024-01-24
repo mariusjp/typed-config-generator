@@ -8,6 +8,9 @@ use Coderg33k\TypedConfigGenerator\Enums\Package;
 
 final class GetConfigsForPredeterminedPackage
 {
+    /**
+     * @return array<int, string>
+     */
     public function execute(Package $package): array
     {
         return match ($package) {

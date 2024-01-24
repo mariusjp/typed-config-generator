@@ -5,37 +5,40 @@ declare(strict_types=1);
 namespace Coderg33k\TypedConfigGenerator;
 
 use Coderg33k\TypedConfigGenerator\ConfigPipes\ConfigPipe;
-use Coderg33k\TypedConfigGenerator\Support\ResolvedDataPipeline;
+use Coderg33k\TypedConfigGenerator\Resolver\ResolvedDataPipeline;
 
 final class Pipeline
 {
-    protected string $class;
-    protected mixed $passable;
+    private string $class;
+    /** @var array<int|string, mixed> */
+    private array $properties;
 
-    /** @var array<int, ConfigPipe> */
-    protected array $pipes = [];
-
-    protected string $method = 'handle';
+    /** @var array<int, class-string<ConfigPipe>|ConfigPipe> */
+    private array $pipes = [];
 
     public static function create(): self
     {
         return new self();
     }
 
+    /**
+     * @param class-string<TypedConfig> $class
+     * @param array<int|string, mixed> $properties
+     */
     public function send(
         string $class,
-        mixed $passable
+        array $properties,
     ): self {
         $this->class = $class;
-        $this->passable = $passable;
+        $this->properties = $properties;
 
         return $this;
     }
 
     /**
-     * @param class-string<ConfigPipe> $pipe
+     * @param class-string<ConfigPipe>|ConfigPipe $pipe
      */
-    public function through(string $pipe): self
+    public function through(string|ConfigPipe $pipe): self
     {
         $this->pipes[] = $pipe;
 
@@ -52,85 +55,7 @@ final class Pipeline
         return new ResolvedDataPipeline(
             pipes: $pipes,
             class: $this->class,
-            properties: $this->passable,
+            properties: $this->properties,
         );
-    }
-
-    public function returnThen(): mixed
-    {
-        return $this->then(function ($passable) {
-            return $passable;
-        });
-    }
-
-    protected function then(\Closure $destination): mixed
-    {
-        $pipeline = \array_reduce(
-            \array_reverse($this->pipes),
-            $this->carry(),
-            $this->prepareDestination($destination),
-        );
-
-        return $pipeline($this->passable);
-    }
-
-    protected function prepareDestination(\Closure $destination): \Closure
-    {
-        return function ($passable) use ($destination) {
-            try {
-                return $destination($passable);
-            } catch (\Throwable $e) {
-                return $this->handleException($passable, $e);
-            }
-        };
-    }
-
-    protected function carry(): \Closure
-    {
-        return function ($stack, $pipe) {
-            return function ($passable) use ($stack, $pipe) {
-                try {
-                    if (\is_callable($pipe)) {
-                        return $pipe($passable, $stack);
-                    } else if (!\is_object($pipe)) {
-                        [$name, $parameters] = $this->parsePipeString($pipe);
-
-                        $pipe = app($name);
-
-                        $parameters = \array_merge([$passable, $stack], $parameters);
-                    } else {
-                        $parameters = [$passable, $stack];
-                    }
-
-                    return \method_exists($pipe, $this->method)
-                        ? $pipe->{$this->method}(...$parameters)
-                        : $pipe(...$parameters);
-                } catch (\Throwable $e) {
-                    return $this->handleException($passable, $e);
-                }
-            };
-        };
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    protected function parsePipeString(string $pipe): array
-    {
-        [$name, $parameters] = \array_pad(\explode(':', $pipe, 2), 2, []);
-
-        if (\is_string($parameters)) {
-            $parameters = \explode(',', $parameters);
-        }
-
-        return [$name, $parameters];
-    }
-
-    /**
-     * @throws \Throwable
-     */
-    protected function handleException($passable, \Throwable $e)
-    {
-        throw $e;
     }
 }

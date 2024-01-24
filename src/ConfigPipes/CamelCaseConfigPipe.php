@@ -8,7 +8,11 @@ use Illuminate\Support\Str;
 
 final class CamelCaseConfigPipe implements ConfigPipe
 {
-    public function handle(string $class, mixed $properties): array
+    /**
+     * @param array<string, mixed> $properties
+     * @return array<string, mixed>
+     */
+    public function handle(string $class, array $properties): array
     {
         return \array_combine(
             \array_map(
